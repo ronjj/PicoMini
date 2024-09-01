@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/Users/ronaldjabouin/Documents/picominimain/build/_deps/cimg-subbuild/CMakeFiles/cimg-populate"
+		},
+		{
+			"file" : "/Users/ronaldjabouin/Documents/picominimain/build/_deps/cimg-subbuild/CMakeFiles/cimg-populate.rule"
+		},
+		{
+			"file" : "/Users/ronaldjabouin/Documents/picominimain/build/_deps/cimg-subbuild/CMakeFiles/cimg-populate-complete.rule"
+		},
+		{
+			"file" : "/Users/ronaldjabouin/Documents/picominimain/build/_deps/cimg-subbuild/cimg-populate-prefix/src/cimg-populate-stamp/cimg-populate-build.rule"
+		},
+		{
+			"file" : "/Users/ronaldjabouin/Documents/picominimain/build/_deps/cimg-subbuild/cimg-populate-prefix/src/cimg-populate-stamp/cimg-populate-configure.rule"
+		},
+		{
+			"file" : "/Users/ronaldjabouin/Documents/picominimain/build/_deps/cimg-subbuild/cimg-populate-prefix/src/cimg-populate-stamp/cimg-populate-download.rule"
+		},
+		{
+			"file" : "/Users/ronaldjabouin/Documents/picominimain/build/_deps/cimg-subbuild/cimg-populate-prefix/src/cimg-populate-stamp/cimg-populate-install.rule"
+		},
+		{
+			"file" : "/Users/ronaldjabouin/Documents/picominimain/build/_deps/cimg-subbuild/cimg-populate-prefix/src/cimg-populate-stamp/cimg-populate-mkdir.rule"
+		},
+		{
+			"file" : "/Users/ronaldjabouin/Documents/picominimain/build/_deps/cimg-subbuild/cimg-populate-prefix/src/cimg-populate-stamp/cimg-populate-patch.rule"
+		},
+		{
+			"file" : "/Users/ronaldjabouin/Documents/picominimain/build/_deps/cimg-subbuild/cimg-populate-prefix/src/cimg-populate-stamp/cimg-populate-test.rule"
+		},
+		{
+			"file" : "/Users/ronaldjabouin/Documents/picominimain/build/_deps/cimg-subbuild/cimg-populate-prefix/src/cimg-populate-stamp/cimg-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"cimg-populate"
+		],
+		"name" : "cimg-populate"
+	}
+}

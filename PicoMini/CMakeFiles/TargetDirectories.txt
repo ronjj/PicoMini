@@ -1,0 +1,3 @@
+/Users/ronaldjabouin/Documents/picominimain/picomini/CMakeFiles/picomini.dir
+/Users/ronaldjabouin/Documents/picominimain/picomini/CMakeFiles/edit_cache.dir
+/Users/ronaldjabouin/Documents/picominimain/picomini/CMakeFiles/rebuild_cache.dir
