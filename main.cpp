@@ -22,6 +22,11 @@ CImg<unsigned char> rotateClockwise90(const CImg<unsigned char> &input)
     return input.get_rotate(90);
 }
 
+CImg<unsigned char> rotateCounterClockwise90(const CImg<unsigned char> &input)
+{
+    return input.get_rotate(-90);
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 3)
@@ -54,6 +59,12 @@ int main(int argc, char *argv[])
                 std::cout << "Rotating image 90 degrees clockwise" << std::endl;
                 img = rotateClockwise90(img);
             }
+            else if (command == "rotate-90")
+            {
+                std::cout << "Rotating image 90 degrees counter clockwise" << std::endl;
+                img = rotateCounterClockwise90(img);
+            }
+
             else
             {
                 std::cerr << "Unknown command: " << command << std::endl;
