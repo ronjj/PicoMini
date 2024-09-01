@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 project(picomini)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
@@ -37,6 +37,6 @@ endif()
 
 # macOS-specific settings
 if(APPLE)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE cimg_display=0 cimg_use_jpeg cimg_use_cpp11)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE cimg_display=0 cimg_use_jpeg cimg_use_cpp20)
     target_link_libraries(${PROJECT_NAME} PRIVATE "-framework AppKit")
 endif()
