@@ -27,6 +27,16 @@ CImg<unsigned char> rotateCounterClockwise90(const CImg<unsigned char> &input)
     return input.get_rotate(-90);
 }
 
+CImg<unsigned char> mirrorX(const CImg<unsigned char> &input)
+{
+    return input.get_mirror('x');
+}
+
+CImg<unsigned char> mirrorY(const CImg<unsigned char> &input)
+{
+    return input.get_mirror('y');
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 3)
@@ -64,7 +74,16 @@ int main(int argc, char *argv[])
                 std::cout << "Rotating image 90 degrees counter clockwise" << std::endl;
                 img = rotateCounterClockwise90(img);
             }
-
+            else if (command == "mirrorx")
+            {
+                std::cout << "Mirroring image about x axis" << std::endl;
+                img = mirrorX(img);
+            }
+            else if (command == "mirrory")
+            {
+                std::cout << "Mirroring image about y axis" << std::endl;
+                img = mirrorY(img);
+            }
             else
             {
                 std::cerr << "Unknown command: " << command << std::endl;
