@@ -84,6 +84,24 @@ CImg<unsigned char> adjustBrightness(const CImg<unsigned char> &input, float fac
     return output;
 }
 
+CImg<unsigned char> grayscale(const CImg<unsigned char> &input)
+{
+    CImg<unsigned char> output = input;
+    cimg_forXYC(output, x, y, c)
+    {
+        int r = input(x, y, 0, 0);
+        int g = input(x, y, 0, 1);
+        int b = input(x, y, 0, 2);
+
+        int grayscale = (r + g + b) / 3;
+
+        output(x, y, 0, 0) = grayscale;
+        output(x, y, 0, 1) = grayscale;
+        output(x, y, 0, 2) = grayscale;
+    }
+    return output;
+}
+
 CImg<unsigned char> resizeImage(const CImg<unsigned char> &input, int new_width, int new_height)
 {
     // If new_height is -1, calculate it to maintain aspect ratio
@@ -175,6 +193,11 @@ int main(int argc, char *argv[])
          {
              std::cout << "Mirroring image about y axis" << std::endl;
              img = mirrorY(img);
+         }},
+        {"grayscale", [](CImg<unsigned char> &img, const std::vector<std::string> &, size_t &)
+         {
+             std::cout << "Grayscaling image" << std::endl;
+             img = grayscale(img);
          }},
         {"blur", [](CImg<unsigned char> &img, const std::vector<std::string> &commands, size_t &i)
          {
