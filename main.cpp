@@ -41,12 +41,27 @@ int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
-        std::cerr << "Usage: " << argv[0] << " <image_path> <command1> [<command2> ...]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <image_path> <command1> [<command2> ...] [-o output_filename]" << std::endl;
         return 1;
     }
 
     std::string imagePath = argv[1];
-    std::vector<std::string> commands(argv + 2, argv + argc);
+    std::vector<std::string> commands;
+    std::string outputPath = "output.jpg"; // Default output filename
+
+    // Parse commands and look for output filename flag
+    for (int i = 2; i < argc; ++i)
+    {
+        std::string arg = argv[i];
+        if (arg == "-o" && i + 1 < argc)
+        {
+            outputPath = argv[++i];
+        }
+        else
+        {
+            commands.push_back(arg);
+        }
+    }
 
     if (!fileExists(imagePath))
     {
@@ -91,7 +106,6 @@ int main(int argc, char *argv[])
         }
 
         // Save the processed image
-        std::string outputPath = "output.jpg";
         img.save(outputPath.c_str());
         std::cout << "Processed image saved to " << outputPath << std::endl;
     }
