@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <unordered_map>
+#include <functional>
 
 // Include CImg library
 #include "CImg.h"
@@ -71,6 +73,17 @@ CImg<unsigned char> blur(const CImg<unsigned char> &input, float sigma)
     return input.get_blur(sigma);
 }
 
+CImg<unsigned char> adjustBrightness(const CImg<unsigned char> &input, float factor)
+{
+    CImg<unsigned char> output = input;
+    cimg_forXYC(output, x, y, c)
+    {
+        int newValue = std::min(255.0f, std::max(0.0f, input(x, y, c) * factor));
+        output(x, y, c) = static_cast<unsigned char>(newValue);
+    }
+    return output;
+}
+
 CImg<unsigned char> resizeImage(const CImg<unsigned char> &input, int new_width, int new_height)
 {
     // If new_height is -1, calculate it to maintain aspect ratio
@@ -89,24 +102,15 @@ CImg<unsigned char> resizeImage(const CImg<unsigned char> &input, int new_width,
     return input.get_resize(new_width, new_height, -100, -100, 5); // Using Mitchell interpolation (5)
 }
 
-// New function to adjust brightness
-CImg<unsigned char> adjustBrightness(const CImg<unsigned char> &input, float factor)
-{
-    CImg<unsigned char> output = input;
-    cimg_forXYC(output, x, y, c)
-    {
-        int newValue = std::min(255.0f, std::max(0.0f, input(x, y, c) * factor));
-        output(x, y, c) = static_cast<unsigned char>(newValue);
-    }
-    return output;
-}
+// Define a type for our command functions
+using CommandFunction = std::function<void(CImg<unsigned char> &, const std::vector<std::string> &, size_t &)>;
 
 int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
         std::cerr << "Usage: " << argv[0] << " <image_path> <command1> [<command2> ...] [-o output_filename] [-d output_directory]" << std::endl;
-        std::cerr << "Available commands: rotate90, rotate-90, mirrorx, mirrory, blur <amount>, brightness <factor>" << std::endl;
+        std::cerr << "Available commands: rotate90, rotate-90, mirrorx, mirrory, blur <amount>, brightness <factor>, resize <width> [<height>]" << std::endl;
         return 1;
     }
 
@@ -150,6 +154,88 @@ int main(int argc, char *argv[])
     // Combine directory and filename
     fs::path outputPath = outputDir / outputFilename;
 
+    // Define the command map
+    std::unordered_map<std::string, CommandFunction> commandMap = {
+        {"rotate90", [](CImg<unsigned char> &img, const std::vector<std::string> &, size_t &)
+         {
+             std::cout << "Rotating image 90 degrees clockwise" << std::endl;
+             img = rotateClockwise90(img);
+         }},
+        {"rotate-90", [](CImg<unsigned char> &img, const std::vector<std::string> &, size_t &)
+         {
+             std::cout << "Rotating image 90 degrees counter clockwise" << std::endl;
+             img = rotateCounterClockwise90(img);
+         }},
+        {"mirrorx", [](CImg<unsigned char> &img, const std::vector<std::string> &, size_t &)
+         {
+             std::cout << "Mirroring image about x axis" << std::endl;
+             img = mirrorX(img);
+         }},
+        {"mirrory", [](CImg<unsigned char> &img, const std::vector<std::string> &, size_t &)
+         {
+             std::cout << "Mirroring image about y axis" << std::endl;
+             img = mirrorY(img);
+         }},
+        {"blur", [](CImg<unsigned char> &img, const std::vector<std::string> &commands, size_t &i)
+         {
+             if (i + 1 >= commands.size())
+             {
+                 std::cerr << "Blur command requires an amount" << std::endl;
+                 return;
+             }
+             float sigma;
+             std::istringstream iss(commands[++i]);
+             if (!(iss >> sigma))
+             {
+                 std::cerr << "Invalid blur amount: " << commands[i] << std::endl;
+                 return;
+             }
+             std::cout << "Blurring image with sigma " << sigma << std::endl;
+             img = blur(img, sigma);
+         }},
+        {"brightness", [](CImg<unsigned char> &img, const std::vector<std::string> &commands, size_t &i)
+         {
+             if (i + 1 >= commands.size())
+             {
+                 std::cerr << "Brightness command requires a factor" << std::endl;
+                 return;
+             }
+             float factor;
+             std::istringstream iss(commands[++i]);
+             if (!(iss >> factor))
+             {
+                 std::cerr << "Invalid brightness factor: " << commands[i] << std::endl;
+                 return;
+             }
+             std::cout << "Adjusting brightness with factor " << factor << std::endl;
+             img = adjustBrightness(img, factor);
+         }},
+        {"resize", [](CImg<unsigned char> &img, const std::vector<std::string> &commands, size_t &i)
+         {
+             if (i + 1 >= commands.size())
+             {
+                 std::cerr << "Resize command requires at least a width" << std::endl;
+                 return;
+             }
+             int new_width, new_height = -1;
+             std::istringstream iss(commands[++i]);
+             if (!(iss >> new_width))
+             {
+                 std::cerr << "Invalid resize width: " << commands[i] << std::endl;
+                 return;
+             }
+             if (i + 1 < commands.size())
+             {
+                 std::istringstream hss(commands[i + 1]);
+                 if (hss >> new_height)
+                 {
+                     ++i; // Consume the height argument
+                 }
+             }
+             std::cout << "Resizing image to " << new_width << "x" << (new_height == -1 ? "auto" : std::to_string(new_height)) << std::endl;
+             img = resizeImage(img, new_width, new_height);
+         }}};
+
     try
     {
         // Load the image
@@ -161,69 +247,10 @@ int main(int argc, char *argv[])
         for (size_t i = 0; i < commands.size(); ++i)
         {
             const auto &command = commands[i];
-            if (command == "rotate90")
+            auto it = commandMap.find(command);
+            if (it != commandMap.end())
             {
-                std::cout << "Rotating image 90 degrees clockwise" << std::endl;
-                img = rotateClockwise90(img);
-            }
-            else if (command == "rotate-90")
-            {
-                std::cout << "Rotating image 90 degrees counter clockwise" << std::endl;
-                img = rotateCounterClockwise90(img);
-            }
-            else if (command == "mirrorx")
-            {
-                std::cout << "Mirroring image about x axis" << std::endl;
-                img = mirrorX(img);
-            }
-            else if (command == "mirrory")
-            {
-                std::cout << "Mirroring image about y axis" << std::endl;
-                img = mirrorY(img);
-            }
-            else if (command == "resize" && i + 1 < commands.size())
-            {
-                int new_width, new_height = -1;
-                std::istringstream iss(commands[++i]);
-                if (!(iss >> new_width))
-                {
-                    std::cerr << "Invalid resize width: " << commands[i] << std::endl;
-                    continue;
-                }
-                if (i + 1 < commands.size())
-                {
-                    std::istringstream hss(commands[i + 1]);
-                    if (hss >> new_height)
-                    {
-                        ++i; // Consume the height argument
-                    }
-                }
-                std::cout << "Resizing image to " << new_width << "x" << (new_height == -1 ? "auto" : std::to_string(new_height)) << std::endl;
-                img = resizeImage(img, new_width, new_height);
-            }
-            else if (command == "blur" && i + 1 < commands.size())
-            {
-                float sigma;
-                std::istringstream iss(commands[++i]);
-                if (!(iss >> sigma))
-                {
-                    std::cerr << "Invalid blur amount: " << commands[i] << std::endl;
-                    continue;
-                }
-                std::cout << "Blurring image with sigma " << sigma << std::endl;
-                img = blur(img, sigma);
-            }
-            else if (command == "brightness" && i + 1 < commands.size())
-            {
-                float factor;
-                std::istringstream iss(commands[++i]);
-                if (!(iss >> factor))
-                {
-                    std::cerr << "Invalid brightness factor: " << commands[i] << std::endl;
-                    continue;
-                }
-                std::cout << "Adjusting brightness with factor " << factor << std::endl;
-                img = adjustBrightness(img, factor);
+                it->second(img, commands, i);
             }
             else
             {
