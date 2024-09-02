@@ -102,7 +102,8 @@ CImg<unsigned char> grayscale(const CImg<unsigned char> &input)
     return output;
 }
 
-CImg<unsigned char> padImage(const CImg<unsigned char> &input, int new_width, int new_height)
+CImg<unsigned char> padImage(const CImg<unsigned char> &input, int new_width, int new_height,
+                             unsigned char r = 255, unsigned char g = 255, unsigned char b = 255)
 {
     // If new dimensions are smaller than current, return the original image
     if (new_width <= input.width() && new_height <= input.height())
@@ -110,8 +111,10 @@ CImg<unsigned char> padImage(const CImg<unsigned char> &input, int new_width, in
         return input;
     }
 
-    // Create a new white image with the desired dimensions
-    CImg<unsigned char> output(new_width, new_height, 1, input.spectrum(), 255);
+    // Create a new image with the desired dimensions and color
+    CImg<unsigned char> output(new_width, new_height, 1, input.spectrum());
+    const unsigned char color[] = {r, g, b};
+    output.draw_rectangle(0, 0, new_width - 1, new_height - 1, color);
 
     // Calculate offsets to center the original image
     int offset_x = (new_width - input.width()) / 2;
@@ -258,10 +261,11 @@ int main(int argc, char *argv[])
          {
              if (i + 2 >= commands.size())
              {
-                 std::cerr << "Pad command requires width and height" << std::endl;
+                 std::cerr << "Pad command requires at least width and height" << std::endl;
                  return;
              }
              int new_width, new_height;
+             unsigned char r = 255, g = 255, b = 255; // Default to white
              std::istringstream wss(commands[++i]);
              std::istringstream hss(commands[++i]);
              if (!(wss >> new_width) || !(hss >> new_height))
@@ -269,8 +273,29 @@ int main(int argc, char *argv[])
                  std::cerr << "Invalid pad dimensions: " << commands[i - 1] << " " << commands[i] << std::endl;
                  return;
              }
-             std::cout << "Padding image to " << new_width << "x" << new_height << std::endl;
-             img = padImage(img, new_width, new_height);
+             // Check if RGB values are provided
+             if (i + 3 < commands.size())
+             {
+                 std::istringstream rss(commands[++i]);
+                 std::istringstream gss(commands[++i]);
+                 std::istringstream bss(commands[++i]);
+                 int r_tmp, g_tmp, b_tmp;
+                 if (rss >> r_tmp && gss >> g_tmp && bss >> b_tmp)
+                 {
+                     r = static_cast<unsigned char>(std::clamp(r_tmp, 0, 255));
+                     g = static_cast<unsigned char>(std::clamp(g_tmp, 0, 255));
+                     b = static_cast<unsigned char>(std::clamp(b_tmp, 0, 255));
+                 }
+                 else
+                 {
+                     std::cerr << "Invalid RGB values, using default white" << std::endl;
+                     i -= 3; // Revert the index if RGB parsing failed
+                 }
+             }
+             std::cout << "Padding image to " << new_width << "x" << new_height
+                       << " with color RGB(" << static_cast<int>(r) << ","
+                       << static_cast<int>(g) << "," << static_cast<int>(b) << ")" << std::endl;
+             img = padImage(img, new_width, new_height, r, g, b);
          }},
         {"resize", [](CImg<unsigned char> &img, const std::vector<std::string> &commands, size_t &i)
          {
