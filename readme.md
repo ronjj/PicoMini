@@ -7,6 +7,8 @@ Ways to modify image:
 - Mirror over x axis
 - Mirror over y axis
 - Blur
+- Grayscale
+- Resize
 
 Users can:
 
@@ -14,4 +16,4 @@ Users can:
 - pass in -d to define file path for saving
 
 Example usage after building with CMake:
-./picomini file/path.jpg rotate90 mirrory blur 20.0 -o example.jpg -d users/ronaldjabouin/desktop
+./picomini example/path.jpg rotate90 mirrory blur 20.0 -o example.jpg -d users/ronaldjabouin/desktop

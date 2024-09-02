@@ -102,6 +102,27 @@ CImg<unsigned char> grayscale(const CImg<unsigned char> &input)
     return output;
 }
 
+CImg<unsigned char> padImage(const CImg<unsigned char> &input, int new_width, int new_height)
+{
+    // If new dimensions are smaller than current, return the original image
+    if (new_width <= input.width() && new_height <= input.height())
+    {
+        return input;
+    }
+
+    // Create a new white image with the desired dimensions
+    CImg<unsigned char> output(new_width, new_height, 1, input.spectrum(), 255);
+
+    // Calculate offsets to center the original image
+    int offset_x = (new_width - input.width()) / 2;
+    int offset_y = (new_height - input.height()) / 2;
+
+    // Copy the original image into the center of the new image
+    output.draw_image(offset_x, offset_y, 0, 0, input);
+
+    return output;
+}
+
 CImg<unsigned char> resizeImage(const CImg<unsigned char> &input, int new_width, int new_height)
 {
     // If new_height is -1, calculate it to maintain aspect ratio
@@ -232,6 +253,24 @@ int main(int argc, char *argv[])
              }
              std::cout << "Adjusting brightness with factor " << factor << std::endl;
              img = adjustBrightness(img, factor);
+         }},
+        {"pad", [](CImg<unsigned char> &img, const std::vector<std::string> &commands, size_t &i)
+         {
+             if (i + 2 >= commands.size())
+             {
+                 std::cerr << "Pad command requires width and height" << std::endl;
+                 return;
+             }
+             int new_width, new_height;
+             std::istringstream wss(commands[++i]);
+             std::istringstream hss(commands[++i]);
+             if (!(wss >> new_width) || !(hss >> new_height))
+             {
+                 std::cerr << "Invalid pad dimensions: " << commands[i - 1] << " " << commands[i] << std::endl;
+                 return;
+             }
+             std::cout << "Padding image to " << new_width << "x" << new_height << std::endl;
+             img = padImage(img, new_width, new_height);
          }},
         {"resize", [](CImg<unsigned char> &img, const std::vector<std::string> &commands, size_t &i)
          {
