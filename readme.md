@@ -8,7 +8,10 @@ Ways to modify image:
 - Mirror over y axis
 - Blur
 
-Users can pass in -o tag to give image custom filename
+Users can:
+
+- pass in -o tag to give image custom filename
+- pass in -d to define file path for saving
 
 Example usage after building with CMake:
-./picomini file/path.jpg rotate90 mirrory blur 20.0 -o example.jpg
+./picomini file/path.jpg rotate90 mirrory blur 20.0 -o example.jpg -d users/ronaldjabouin/desktop

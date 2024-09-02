@@ -5,10 +5,12 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 // Include CImg library
 #include "CImg.h"
 using namespace cimg_library;
+namespace fs = std::filesystem;
 
 // Function to check if a file exists
 bool fileExists(const std::string &filePath)
@@ -17,7 +19,33 @@ bool fileExists(const std::string &filePath)
     return f.good();
 }
 
-// Function to rotate image 90 degrees clockwise
+// Function to check if a directory is writable
+bool isDirectoryWritable(const fs::path &dir)
+{
+    if (!fs::exists(dir) || !fs::is_directory(dir))
+    {
+        return false;
+    }
+
+    fs::path testFile = dir / "test_write_permission";
+    try
+    {
+        std::ofstream file(testFile);
+        if (file)
+        {
+            file.close();
+            fs::remove(testFile);
+            return true;
+        }
+    }
+    catch (...)
+    {
+    }
+
+    return false;
+}
+
+// Image processing functions (unchanged)
 CImg<unsigned char> rotateClockwise90(const CImg<unsigned char> &input)
 {
     return input.get_rotate(90);
@@ -47,22 +75,27 @@ int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
-        std::cerr << "Usage: " << argv[0] << " <image_path> <command1> [<command2> ...] [-o output_filename]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <image_path> <command1> [<command2> ...] [-o output_filename] [-d output_directory]" << std::endl;
         std::cerr << "Available commands: rotate90, rotate-90, mirrorx, mirrory, blur <amount>" << std::endl;
         return 1;
     }
 
     std::string imagePath = argv[1];
     std::vector<std::string> commands;
-    std::string outputPath = "output.jpg"; // Default output filename
+    fs::path outputFilename = "output.jpg";  // Default output filename
+    fs::path outputDir = fs::current_path(); // Default to current directory
 
-    // Parse commands and look for output filename flag
+    // Parse commands and look for output filename and directory flags
     for (int i = 2; i < argc; ++i)
     {
         std::string arg = argv[i];
         if (arg == "-o" && i + 1 < argc)
         {
-            outputPath = argv[++i];
+            outputFilename = argv[++i];
+        }
+        else if (arg == "-d" && i + 1 < argc)
+        {
+            outputDir = argv[++i];
         }
         else
         {
@@ -75,6 +108,17 @@ int main(int argc, char *argv[])
         std::cerr << "Error: File does not exist: " << imagePath << std::endl;
         return 1;
     }
+
+    // Validate output directory
+    if (!isDirectoryWritable(outputDir))
+    {
+        std::cerr << "Warning: Specified output directory is not writable: " << outputDir << std::endl;
+        std::cerr << "Defaulting to output in the current directory." << std::endl;
+        outputDir = fs::current_path();
+    }
+
+    // Combine directory and filename
+    fs::path outputPath = outputDir / outputFilename;
 
     try
     {
@@ -126,7 +170,7 @@ int main(int argc, char *argv[])
         }
 
         // Save the processed image
-        img.save(outputPath.c_str());
+        img.save(outputPath.string().c_str());
         std::cout << "Processed image saved to " << outputPath << std::endl;
     }
     catch (const CImgException &e)
