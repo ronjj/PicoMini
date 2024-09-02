@@ -144,15 +144,74 @@ CImg<unsigned char> resizeImage(const CImg<unsigned char> &input, int new_width,
     return input.get_resize(new_width, new_height, -100, -100, 5); // Using Mitchell interpolation (5)
 }
 
+void printHelp()
+{
+    std::cout << "Photo Editor Usage:" << std::endl;
+    std::cout << "./picomini <image_path> <command1> [<command2> ...] [-o output_filename] [-d output_directory]" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Options:" << std::endl;
+    std::cout << "  -h, --help     Display this help message" << std::endl;
+    std::cout << "  -o <filename>  Specify the output filename (default: output.jpg)" << std::endl;
+    std::cout << "  -d <directory> Specify the output directory (default: current directory)" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Available Commands:" << std::endl;
+    std::cout << "  rotate90" << std::endl;
+    std::cout << "    Rotate the image 90 degrees clockwise" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  rotate-90" << std::endl;
+    std::cout << "    Rotate the image 90 degrees counter-clockwise" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  mirrorx" << std::endl;
+    std::cout << "    Mirror the image horizontally (flip about the x-axis)" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  mirrory" << std::endl;
+    std::cout << "    Mirror the image vertically (flip about the y-axis)" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  blur <amount>" << std::endl;
+    std::cout << "    Apply Gaussian blur to the image" << std::endl;
+    std::cout << "    <amount>: Strength of the blur (sigma value), e.g., 2.5" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  brightness <factor>" << std::endl;
+    std::cout << "    Adjust the brightness of the image" << std::endl;
+    std::cout << "    <factor>: Brightness factor, where:" << std::endl;
+    std::cout << "              1.0 is no change" << std::endl;
+    std::cout << "              >1.0 increases brightness" << std::endl;
+    std::cout << "              <1.0 decreases brightness" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  resize <width> [<height>]" << std::endl;
+    std::cout << "    Resize the image" << std::endl;
+    std::cout << "    <width>: New width in pixels" << std::endl;
+    std::cout << "    <height>: New height in pixels (optional)" << std::endl;
+    std::cout << "              If omitted, height will be calculated to maintain aspect ratio" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  pad <width> <height> [<r> <g> <b>]" << std::endl;
+    std::cout << "    Pad the image to specified dimensions" << std::endl;
+    std::cout << "    <width>: New width in pixels" << std::endl;
+    std::cout << "    <height>: New height in pixels" << std::endl;
+    std::cout << "    <r> <g> <b>: Optional RGB values for padding color (0-255 for each)" << std::endl;
+    std::cout << "                 Default is white (255 255 255) if not specified" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Examples:" << std::endl;
+    std::cout << "  ./picomini input.jpg rotate90 blur 2.5 -o rotated_blurred.jpg" << std::endl;
+    std::cout << "  ./picomini input.jpg resize 800 brightness 1.2 -o resized_brighter.jpg" << std::endl;
+    std::cout << "  ./picomini input.jpg pad 1000 1000 0 0 0 -o padded_black.jpg" << std::endl;
+}
+
 // Define a type for our command functions
 using CommandFunction = std::function<void(CImg<unsigned char> &, const std::vector<std::string> &, size_t &)>;
 
 int main(int argc, char *argv[])
 {
+    if (argc < 2 || std::string(argv[1]) == "-h" || std::string(argv[1]) == "--help")
+    {
+        printHelp();
+        return 0;
+    }
+
     if (argc < 3)
     {
         std::cerr << "Usage: " << argv[0] << " <image_path> <command1> [<command2> ...] [-o output_filename] [-d output_directory]" << std::endl;
-        std::cerr << "Available commands: rotate90, rotate-90, mirrorx, mirrory, blur <amount>, brightness <factor>, resize <width> [<height>]" << std::endl;
+        std::cerr << "Use -h or --help for more information." << std::endl;
         return 1;
     }
 
