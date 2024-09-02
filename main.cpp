@@ -71,6 +71,24 @@ CImg<unsigned char> blur(const CImg<unsigned char> &input, float sigma)
     return input.get_blur(sigma);
 }
 
+CImg<unsigned char> resizeImage(const CImg<unsigned char> &input, int new_width, int new_height)
+{
+    // If new_height is -1, calculate it to maintain aspect ratio
+    if (new_height == -1)
+    {
+        float aspect_ratio = static_cast<float>(input.height()) / input.width();
+        new_height = static_cast<int>(new_width * aspect_ratio);
+    }
+    // If new_width is -1, calculate it to maintain aspect ratio
+    else if (new_width == -1)
+    {
+        float aspect_ratio = static_cast<float>(input.width()) / input.height();
+        new_width = static_cast<int>(new_height * aspect_ratio);
+    }
+
+    return input.get_resize(new_width, new_height, -100, -100, 5); // Using Mitchell interpolation (5)
+}
+
 // New function to adjust brightness
 CImg<unsigned char> adjustBrightness(const CImg<unsigned char> &input, float factor)
 {
@@ -162,6 +180,26 @@ int main(int argc, char *argv[])
             {
                 std::cout << "Mirroring image about y axis" << std::endl;
                 img = mirrorY(img);
+            }
+            else if (command == "resize" && i + 1 < commands.size())
+            {
+                int new_width, new_height = -1;
+                std::istringstream iss(commands[++i]);
+                if (!(iss >> new_width))
+                {
+                    std::cerr << "Invalid resize width: " << commands[i] << std::endl;
+                    continue;
+                }
+                if (i + 1 < commands.size())
+                {
+                    std::istringstream hss(commands[i + 1]);
+                    if (hss >> new_height)
+                    {
+                        ++i; // Consume the height argument
+                    }
+                }
+                std::cout << "Resizing image to " << new_width << "x" << (new_height == -1 ? "auto" : std::to_string(new_height)) << std::endl;
+                img = resizeImage(img, new_width, new_height);
             }
             else if (command == "blur" && i + 1 < commands.size())
             {
