@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <fstream>
+#include <sstream>
 
 // Include CImg library
 #include "CImg.h"
@@ -37,11 +38,17 @@ CImg<unsigned char> mirrorY(const CImg<unsigned char> &input)
     return input.get_mirror('y');
 }
 
+CImg<unsigned char> blur(const CImg<unsigned char> &input, float sigma)
+{
+    return input.get_blur(sigma);
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
         std::cerr << "Usage: " << argv[0] << " <image_path> <command1> [<command2> ...] [-o output_filename]" << std::endl;
+        std::cerr << "Available commands: rotate90, rotate-90, mirrorx, mirrory, blur <amount>" << std::endl;
         return 1;
     }
 
@@ -77,8 +84,9 @@ int main(int argc, char *argv[])
                   << " with " << img.spectrum() << " channels" << std::endl;
 
         // Process commands
-        for (const auto &command : commands)
+        for (size_t i = 0; i < commands.size(); ++i)
         {
+            const auto &command = commands[i];
             if (command == "rotate90")
             {
                 std::cout << "Rotating image 90 degrees clockwise" << std::endl;
@@ -98,6 +106,18 @@ int main(int argc, char *argv[])
             {
                 std::cout << "Mirroring image about y axis" << std::endl;
                 img = mirrorY(img);
+            }
+            else if (command == "blur" && i + 1 < commands.size())
+            {
+                float sigma;
+                std::istringstream iss(commands[++i]);
+                if (!(iss >> sigma))
+                {
+                    std::cerr << "Invalid blur amount: " << commands[i] << std::endl;
+                    continue;
+                }
+                std::cout << "Blurring image with sigma " << sigma << std::endl;
+                img = blur(img, sigma);
             }
             else
             {
