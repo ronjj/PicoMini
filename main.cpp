@@ -45,7 +45,7 @@ bool isDirectoryWritable(const fs::path &dir)
     return false;
 }
 
-// Image processing functions (unchanged)
+// Image processing functions
 CImg<unsigned char> rotateClockwise90(const CImg<unsigned char> &input)
 {
     return input.get_rotate(90);
@@ -71,12 +71,24 @@ CImg<unsigned char> blur(const CImg<unsigned char> &input, float sigma)
     return input.get_blur(sigma);
 }
 
+// New function to adjust brightness
+CImg<unsigned char> adjustBrightness(const CImg<unsigned char> &input, float factor)
+{
+    CImg<unsigned char> output = input;
+    cimg_forXYC(output, x, y, c)
+    {
+        int newValue = std::min(255.0f, std::max(0.0f, input(x, y, c) * factor));
+        output(x, y, c) = static_cast<unsigned char>(newValue);
+    }
+    return output;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
         std::cerr << "Usage: " << argv[0] << " <image_path> <command1> [<command2> ...] [-o output_filename] [-d output_directory]" << std::endl;
-        std::cerr << "Available commands: rotate90, rotate-90, mirrorx, mirrory, blur <amount>" << std::endl;
+        std::cerr << "Available commands: rotate90, rotate-90, mirrorx, mirrory, blur <amount>, brightness <factor>" << std::endl;
         return 1;
     }
 
@@ -162,6 +174,18 @@ int main(int argc, char *argv[])
                 }
                 std::cout << "Blurring image with sigma " << sigma << std::endl;
                 img = blur(img, sigma);
+            }
+            else if (command == "brightness" && i + 1 < commands.size())
+            {
+                float factor;
+                std::istringstream iss(commands[++i]);
+                if (!(iss >> factor))
+                {
+                    std::cerr << "Invalid brightness factor: " << commands[i] << std::endl;
+                    continue;
+                }
+                std::cout << "Adjusting brightness with factor " << factor << std::endl;
+                img = adjustBrightness(img, factor);
             }
             else
             {
