@@ -23,7 +23,6 @@ void output_pixels(cimg_library::CImg<unsigned char> img)
                 if (channel < c - 1)
                     std::cout << ",";
             }
-            std::cout << std::endl;
         }
     }
 }
@@ -53,6 +52,39 @@ std::vector<std::vector<std::array<unsigned char, 3>>> read_pixels_as_matrix(con
     return matrix;
 }
 
+cimg_library::CImg<unsigned char> make_image_white(const cimg_library::CImg<unsigned char> &img)
+{
+    auto pixel_matrix = read_pixels_as_matrix(img);
+    auto height = pixel_matrix.size();
+    auto width = pixel_matrix[0].size();
+
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            pixel_matrix[y][x][0] = 255;
+            pixel_matrix[y][x][1] = 255;
+            pixel_matrix[y][x][2] = 255;
+        }
+    }
+
+    // Create a new CImg object with the same dimensions as the original
+    cimg_library::CImg<unsigned char> result(width, height, 1, 3);
+
+    // Copy the edited matrix data back to the CImg object
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                result(x, y, 0, c) = pixel_matrix[y][x][c];
+            }
+        }
+    }
+
+    return result;
+}
 void save_image(const cimg_library::CImg<unsigned char> &img, const std::string &output_path)
 {
     try
@@ -79,7 +111,8 @@ int main(int argc, char *argv[])
     try
     {
         CImg<unsigned char> img(imagePath.c_str());
-        read_pixels_as_matrix(img);
+        auto white_img = make_image_white(img);
+        save_image(white_img, "/Users/ronaldjabouin/Desktop/output.jpg");
     }
     catch (CImgException &e)
     {
